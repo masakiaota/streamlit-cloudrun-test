@@ -3,9 +3,11 @@ FROM ${BASE_IMAGE}
 
 ARG PROJECT_NAME=streamlit-cloudrun-test
 ARG USER_NAME=challenger
-ARG GROUP_NAME=challengers
-ARG UID=1000 # change this if you want to use your own UID
-ARG GID=1000 # change this if you want to use your own GID
+ARG GROUP_NAME=testers
+# change this if you want to use your own UID
+ARG UID=1001
+# change this if you want to use your own GID
+ARG GID=1002 
 ARG PYTHON_VERSION=3.8
 ARG APPLICATION_DIRECTORY=/home/${USER_NAME}/${PROJECT_NAME}
 ARG RUN_POETRY_INSTALL_AT_BUILD_TIME="false"
@@ -33,6 +35,8 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTH
     && python3 -m pip install poetry
 
 # Add user. Without this, following process is executed as admin. 
+# RUN groupadd -g ${GID} ${GROUP_NAME} \
+#     && useradd -ms /bin/sh -u ${UID} -g ${GID} ${USER_NAME}
 RUN groupadd -g ${GID} ${GROUP_NAME} \
     && useradd -ms /bin/sh -u ${UID} -g ${GID} ${USER_NAME}
 
@@ -41,7 +45,7 @@ WORKDIR ${APPLICATION_DIRECTORY}
 
 # If ${RUN_POETRY_INSTALL_AT_BUILD_TIME} = "true", install Python package by Poetry and move .venv under ${HOME}.
 # This process is for CI (GitHub Actions). To prevent overwrite by volume of docker compose, .venv is moved under ${HOME}.
-COPY --chown=${UID}:${GID} pyproject.toml poetry.lock .
+COPY --chown=${UID}:${GID} pyproject.toml poetry.lock ./
 RUN test ${RUN_POETRY_INSTALL_AT_BUILD_TIME} = "true" && poetry install || echo "skip to run poetry install."
 RUN test ${RUN_POETRY_INSTALL_AT_BUILD_TIME} = "true" && mv ${APPLICATION_DIRECTORY}/.venv ${HOME}/.venv || echo "skip to move .venv."
 
@@ -50,6 +54,6 @@ RUN poetry install --no-interaction --without dev --no-ansi --no-root -vvv
 CMD ["poetry", "run", "streamlit", "run", "streamlit_app.py", "--server.port", "8080"]
 
 # copy source code
-COPY --chown=${UID}:${GID} . .
+COPY --chown=${UID}:${GID} ./ ./
 
 EXPOSE 8080
