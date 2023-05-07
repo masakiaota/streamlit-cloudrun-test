@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "streamlit-cloudrun-test"
+version = "0.1.0"
+description = ""
+authors = ["masakiaota <aotamasakimail@gmail.com>"]
+readme = "README.md"
+packages = [{include = "streamlit_cloudrun_test"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+streamlit = "<1.22.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
